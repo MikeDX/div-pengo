@@ -66,17 +66,12 @@ begin
 
     grid[gx].col[gy]=0;
 
-//    repeat
-        // check if current block is empty
     while(gy>=0)
 
         while(gx<13)
 
-            //x=(gx+1)*16;
-            //y=8+(gy+2)*16;
-           // graph=4;
-            //frame;
-                // maze gen loop
+            // maze gen loop
+            // check if current block is empty
             if(grid[gx].col[gy]==0)
 
                 if(gy>0)
