@@ -4,34 +4,36 @@ global
 struct grid[13]
     col[15];
 end
+mazedone=0;
 
+private
+    first=1;
 
 begin
 
-    set_fps(60,2);
+    set_fps(30,2);
 
     set_mode(224288);
     load_fpg("pengo/pengo.fpg");
     put_screen(file,1);
 
+    loop
+
     for(x=0;x<13;x++)
         for(y=0;y<15;y++)
             grid[x].col[y]=1;
-            brick(x,y);
-        end
-    end
-
-    genmaze(0,14);
-    loop
-/*
-        from x = 0 to 12;
-            from y = 0 to 14;
-                grid[x].col[y]=rand(0,1);
+            if(first)
+                brick(x,y);
             end
         end
-*/
-        frame;
     end
+    first=0;
+    genmaze(0,14);
+    repeat
+        frame;
+    until(key(_space))
+    end
+
 
 end
 
@@ -53,10 +55,180 @@ begin
 end
 
 
-function genmaze(x,y)
+function genmaze(gx,gy)
+
+private
+
+    finished=0;
+
 
 begin
 
-    grid[x].col[y]=0;
+    grid[gx].col[gy]=0;
+
+//    repeat
+        // check if current block is empty
+    while(gy>=0)
+
+        while(gx<13)
+
+            //x=(gx+1)*16;
+            //y=8+(gy+2)*16;
+           // graph=4;
+            //frame;
+                // maze gen loop
+            if(grid[gx].col[gy]==0)
+
+                if(gy>0)
+
+                    if(grid[gx].col[gy-2]==1)
+                        maze2(gx,gy);
+                    end
+
+                end
+
+                if(gy<14)
+
+                    if(grid[gx].col[gy+2]==1)
+                        maze2(gx,gy);
+                    end
+
+                end
+
+                if(gx>0)
+                    if(grid[gx-2].col[gy]==1)
+                        maze2(gx,gy);
+                    end
+                end
+
+                if(gx<12)
+                    if(grid[gx+2].col[gy]==1)
+                        maze2(gx,gy);
+                    end
+                end
+
+            end
+
+            //frame;
+
+            gx+=2;
+
+        end
+
+        gx=0;
+        gy-=2;
+
+    end
 
 end
+
+
+function maze2(gx,gy)
+
+private
+    rnd=0;
+begin
+
+    repeat
+
+        rnd=rand(0,3);
+
+        switch(rnd)
+
+            case 0:
+
+                if(gy>0)
+
+                    if(grid[gx].col[gy-2]==1)
+                        grid[gx].col[gy-1]=0;
+                        grid[gx].col[gy-2]=0;
+                        frame;
+
+                        mazedone=1;
+                        gy-=2;
+                    end
+
+                end
+
+            end
+
+            case 1:
+                if(gy<14)
+                    if(grid[gx].col[gy+2]==1)
+                        grid[gx].col[gy+1]=0;
+                        grid[gx].col[gy+2]=0;
+                        frame;
+
+                        mazedone=1;
+                        gy+=2;
+                     end
+                end
+
+            end
+
+            case 2:
+
+                if(gx>0)
+                    if(grid[gx-2].col[gy]==1)
+                        grid[gx-1].col[gy]=0;
+                        grid[gx-2].col[gy]=0;
+                        frame;
+                        mazedone=1;
+                        gx-=2;
+
+                    end
+                end
+
+            end
+
+            case 3:
+
+                if(gx<12)
+                    if(grid[gx+2].col[gy]==1)
+                        grid[gx+1].col[gy]=0;
+                        grid[gx+2].col[gy]=0;
+                        frame;
+                        mazedone=1;
+                        gx+=2;
+                    end
+                end
+
+            end
+
+
+        end
+
+        if(mazedone && gy>0)
+
+            if(grid[gx].col[gy-2]==1)
+                mazedone=0;
+            end
+
+        end
+
+        if(gy<14 && mazedone)
+
+            if(grid[gx].col[gy+2]==1)
+                mazedone=0;
+            end
+
+        end
+
+        if(mazedone && gx>0)
+
+            if(grid[gx-2].col[gy]==1)
+                mazedone=0;
+            end
+        end
+
+        if(gx<12)
+            if(grid[gx+2].col[gy]==1)
+                mazedone=0;
+            end
+        end
+
+
+    until(mazedone);
+end
+
+
