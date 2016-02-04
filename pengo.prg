@@ -141,6 +141,7 @@ begin
 
                     if(grid[gx].col[gy-2]==1)
                         grid[gx].col[gy-1]=0;
+                        frame;
                         grid[gx].col[gy-2]=0;
                         frame;
 
@@ -156,6 +157,7 @@ begin
                 if(gy<14)
                     if(grid[gx].col[gy+2]==1)
                         grid[gx].col[gy+1]=0;
+                        frame;
                         grid[gx].col[gy+2]=0;
                         frame;
 
@@ -171,6 +173,7 @@ begin
                 if(gx>0)
                     if(grid[gx-2].col[gy]==1)
                         grid[gx-1].col[gy]=0;
+                        frame;
                         grid[gx-2].col[gy]=0;
                         frame;
                         mazedone=1;
@@ -186,6 +189,7 @@ begin
                 if(gx<12)
                     if(grid[gx+2].col[gy]==1)
                         grid[gx+1].col[gy]=0;
+                        frame;
                         grid[gx+2].col[gy]=0;
                         frame;
                         mazedone=1;
