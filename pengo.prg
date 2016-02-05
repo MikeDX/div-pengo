@@ -1,26 +1,28 @@
 program pengo_sega_1980;
 
 global
-struct grid[13]
-    col[15];
-end
-mazedone=0;
-fast=1;
-speed=-1;
-boxes=0;
+
+    struct grid[13]
+        col[15];
+    end
+
+    mazedone=0;
+    fast=0;
+    speed=-1;
+    boxes=0;
+    bug=0;
 
 private
+
     first=1;
 
 begin
-    write_int(0,80,16,0,&boxes);
-
-    //rand_seed(0);
 
     set_fps(60,2);
-    //convert_palette
     set_mode(224288);
+
     load_fpg("pengo/pengo.fpg");
+
     put_screen(file,1);
 
 
@@ -28,7 +30,7 @@ begin
 
     for(x=0;x<13;x++)
         for(y=0;y<15;y++)
-            grid[x].col[y]=1;
+            grid[x].col[y]=1;//(rand(0,2)==0);
             if(first)
                 brick(x,y);
             end
@@ -178,6 +180,9 @@ process snowbee(gx,gy)
 
 private
     target=0;
+    targetx=0;
+    targety=0;
+
     dir=1;
     map_points;
     struct points[100]
@@ -192,10 +197,10 @@ private
     lastx=0;
 
 begin
-/*
-    write_int(0,80,10,0,&tx);
-    write_int(0,96,10,0,&ty);
-    write_int(0,80,16,0,&x);
+
+    //write_int(0,80,10,0,&targetx);
+    //write_int(0,96,10,0,&targety);
+/*    write_int(0,80,16,0,&x);
     write_int(0,96,16,0,&y);
 */
     graph=10;
@@ -205,6 +210,12 @@ begin
     tx=x;
     ty=y;
 
+    target=get_id(type pengo);
+
+    if(target)
+        targetx=target.x;
+        targety=target.y;
+    end
 
     loop
         if(tx==x && ty==y)
@@ -213,12 +224,11 @@ begin
         end
 
         anim++;
-        target=get_id(type pengo);
 
-        if(target && y==ty && x==tx)
+        if(y==ty && x==tx)
             //debug;
 
-            map_points = path_find(0,file,6,4,target.x,target.y, &points, sizeof(points));
+            map_points = path_find(0,file,6,4,targetx,targety, &points, sizeof(points));
 
             if(map_points>0)
              //   debug;
@@ -229,7 +239,8 @@ begin
 
 
                 if(lastx==0)
-                // && abs(points[0].x-x) > abs(points[0].y-y))
+                // &&
+                   // if(points[0].x%16-x%16) < points[0].y%16-y%16)
 
                     if(points[0].x>x && gx<12)
                         if(grid[gx+1].col[gy]==0)
@@ -259,6 +270,10 @@ begin
                     end
                     lastx=0;
                 end
+            else
+
+                tx=x;
+                ty=y;
 
             end
         end
@@ -287,13 +302,17 @@ begin
         if(ty==y && tx==x)
             gx=(x/16)-1;
             gy=(y/16)-2;
+            if(rand(0,360)==360 || (x==targetx && y==targety) )
+                //debug;
+                targetx=(   (rand(0,1)*12)  +1) *16;
+                targety=8+( (rand(0,1)*14) +2) *16;
+
+            end
+
         end
 
+        graph=(10+dir*2)+((anim%20)<10);
 
-        //if(anim%20==0)
-            graph=(10+dir*2)+((anim%20)<10);
-            //(graph==(10+dir*2));
-        //end
 
         frame;
 
@@ -380,9 +399,9 @@ private
 begin
 
     repeat
-     //   x=(gx+1)*16;
-     //   y=8+(gy+2)*16;
-     //   graph=4;
+        x=(gx+1)*16;
+        y=8+(gy+2)*16;
+        graph=3;
 
         rnd=rand(0,3);
 
@@ -394,6 +413,7 @@ begin
 
                     if(grid[gx].col[gy-2]==1)
                         grid[gx].col[gy-1]=0;
+                        y-=16;
                         if(!fast) frame(speed); end
 
                         grid[gx].col[gy-2]=0;
@@ -412,6 +432,7 @@ begin
                 if(gy<14)
                     if(grid[gx].col[gy+2]==1)
                         grid[gx].col[gy+1]=0;
+                        y+=16;
                         if(!fast) frame(speed); end
 
                         grid[gx].col[gy+2]=0;
@@ -429,6 +450,7 @@ begin
                 if(gx>0)
                     if(grid[gx-2].col[gy]==1)
                         grid[gx-1].col[gy]=0;
+                        x-=16;
                         if(!fast) frame(speed); end
 
                         grid[gx-2].col[gy]=0;
@@ -447,6 +469,7 @@ begin
                 if(gx<12)
                     if(grid[gx+2].col[gy]==1)
                         grid[gx+1].col[gy]=0;
+                        x+=16;
                         if(!fast) frame(speed); end
 
                         grid[gx+2].col[gy]=0;
@@ -485,11 +508,23 @@ begin
             end
         end
 
-        if(gx<12)
-            if(grid[gx+2].col[gy]==1)
-                mazedone=0;
+        // replicate original pengo maze gen bug
+        if(!bug)
+            if(mazedone && gx<12)
+                if(grid[gx+2].col[gy]==1)
+                    mazedone=0;
+                end
+            end
+        else
+            if(mazedone && gy<14)
+
+                if(grid[gx].col[gy+2]==1)
+                    mazedone=0;
+                end
+
             end
         end
+
 
 
     until(mazedone);
